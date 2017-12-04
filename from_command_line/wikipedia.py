@@ -241,7 +241,7 @@ while quit == 0:
 
 	if this_input == 2:
 		new_database = raw_input("Enter Wikipedia Category: ")
-		print("Loading information into database. This may take a a while.")
+		print("Loading information into database. This may take a while.")
 		add_new(new_database)
 		print("New database has been added")
 
