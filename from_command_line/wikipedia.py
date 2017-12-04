@@ -1,4 +1,4 @@
-# run from command line
+# run from command line using the command ```$ python wikipedia.py```
 
 # import packages
 import pymongo
