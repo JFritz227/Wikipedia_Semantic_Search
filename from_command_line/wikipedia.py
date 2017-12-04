@@ -1,3 +1,6 @@
+# run from command line
+
+# import packages
 import pymongo
 import re
 import requests
@@ -10,8 +13,11 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics.pairwise import cosine_similarity
 import sys
 
+# use IP address for database location
 client = pymongo.MongoClient('54.200.30.7', 27016)
 
+# functions class with functions to clean text, get page ids for each wikipedia page, find title, strip punctuation from documents except for periods, 
+# delete periods, strip html, and get page contents
 class functions():
     
     def clean_text(self, string):
@@ -51,6 +57,7 @@ class functions():
         no_html_string = self.striphtml(my_request['query']['pages'][str(pageid)]['extract']).replace('\n', ' ')
         return {'title':title, 'raw page text':self.strip_punctuation(no_html_string), 'category':category}
     
+# create class to add database, drop database and dive into the wikipedia categories
 class mongodb():
     wiki_db = []
     database_name_ = ''
@@ -193,16 +200,25 @@ def add_new(database_name):
     database.add_database()
     database.add_first_layer(database_name)
     for articles in list(client[database_edited].subcategories.find()):
-        category = articles['title'].replace('Category:', '')
-        category_edited = functions().clean_text(category)
-        database.add_second_layer(database_name, category)
+    	try:
+        	category = articles['title'].replace('Category:', '')
+        	category_edited = functions().clean_text(category)
+        	database.add_second_layer(database_name, category)
+        except:
+        	pass
         for categories in list(client[database_edited][database_edited][category_edited].subcategories.find()):
-            new_subcat = categories['title'].replace('Category:', '')
-            new_subcat_edited = functions().clean_text(new_subcat)
-            database.add_third_layer(database_name, category, new_subcat)
-            for subcategories in list(client[database_edited][database_edited][category_edited][new_subcat_edited].subcategories.find()):
-                final_subcat = subcategories['title'].replace('Category:', '')
-                database.add_fourth_layer(database_name, category, new_subcat, final_subcat)
+        	try:
+        		new_subcat = categories['title'].replace('Category:', '')
+           		new_subcat_edited = functions().clean_text(new_subcat)
+           		database.add_third_layer(database_name, category, new_subcat)
+           	except:
+           		pass
+           	for subcategories in list(client[database_edited][database_edited][category_edited][new_subcat_edited].subcategories.find()):
+           		try:
+           			final_subcat = subcategories['title'].replace('Category:', '')
+           			database.add_fourth_layer(database_name, category, new_subcat, final_subcat)
+           		except:
+           			pass
 
 quit = 0
 
